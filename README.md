@@ -41,5 +41,11 @@ POST http://localhost:5000/analyze
 ```
 The request body should contain the image file to be analyzed. The response will be a JSON containing the ML analysis of the image. 
 
+## Testing
+To run the tests, use the following command:
+```
+make check
+``
+
 ## Credits
-This app is developed by [Antarr](https://antarr.dev/).
+This app is developed by [Antarr Byrd](https://antarr.dev/).
