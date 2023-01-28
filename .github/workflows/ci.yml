@@ -25,10 +25,10 @@ jobs:
     - name: Check Coverage and Generate Report 
       run: | 
         coverage report --fail-under=100 
-        coverage json --omit="*/tests/*" # omit tests from coverage report
+        coverage html --omit="*/tests/*" # omit tests from coverage report
     - name: Save Coverage Report 
       uses: actions/upload-artifact@v2 
       with: 
         name: coverage-report 
-        path: coverage.json
+        path: htmlcov
 
