@@ -47,5 +47,12 @@ To run the tests, use the following command:
 make check
 ``
 
+## Training the model
+To train the model, use the following command:
+```
+make train
+```
+
+
 ## Credits
 This app is developed by [Antarr Byrd](https://antarr.dev/).
