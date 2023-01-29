@@ -10,7 +10,6 @@ class Twitter():
     def __init__(self):
         self.client = None
         self.BEARER_TOKEN = os.environ.get('BEARER_TOKEN')
-        self.QUERY_SUFFIX = ' -filter:retweets filter:images'
         self.API_URL = 'https://api.twitter.com/2/tweets/search/recent'
         self.IMAGE_CLASSIFIER = ImageClassifier()
 
@@ -37,16 +36,15 @@ class Twitter():
                                              'media.fields': media_fields,
                                              'max_results': max_results})
 
-        if json_response.status_code == 200:
-            if 'includes' not in json_response.json():
-                return {'images': images, 'status_code': json_response.status_code, 'query': query, 'status_text': status}
-            for media in json_response.json()['includes']:
-                for count, image in enumerate(json_response.json()['includes'][media]):
-                    if count >= 5:
-                        break
-                    local_path = self.save_image_to_tmp(image['url'])
-                    image_classes = self.classify_image(local_path)
-                    images.append({'url': image['url'], 'key': image['media_key'], 'classifications': image_classes})
+        if json_response.status_code == 200:  # success
+            if 'includes' in json_response.json():
+                for media in json_response.json()['includes']:
+                    for count, image in enumerate(json_response.json()['includes'][media]):
+                        if count >= 5:
+                            break
+                        local_path = self.save_image_to_tmp(image['url'])
+                        image_classes = self.classify_image(local_path)
+                        images.append({'url': image['url'], 'key': image['media_key'], 'classifications': image_classes})
         elif json_response.status_code == 429:  # rate limit exceeded
             status = "Rate limit exceeded"  # set status to rate limit exceeded
 

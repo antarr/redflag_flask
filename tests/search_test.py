@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from api.models.twitter import Twitter
+import vcr
 
 
 class SearchTest(unittest.TestCase):
@@ -40,39 +41,14 @@ class SearchTest(unittest.TestCase):
         }
         self.assertEqual(response, expected)
 
-    @patch('requests.get', return_value=MagicMock(status_code=200))
-    def test_search_success_with_images(self, mock_get):
-        term = 'test'
+    def test_search_success_with_images(self):
+        with vcr.use_cassette('tests/fixtures/search_success_with_images.yaml'):
+            term = 'test'
+            response = Twitter().search(term)
+            expected = '3_1619751159371280385'
+            self.assertEqual(response['images'][0]['key'], expected)
 
-        mock_get.return_value.json.return_value = {
-            "includes": {
-                "media": [
-                    {
-                        "url": "https://pbs.twimg.com/media/FnmRzMEX0AQjDvl.jpg",
-                        "media_key": "3_1619485849615323140",
-                        "type": "photo"
-                    },
-                    {
-                        "url": "https://pbs.twimg.com/media/FnmRrwnXoAEzkUO.jpg",
-                        "media_key": "3_1619485721986834433",
-                        "type": "photo"
-                    }]
-            }
-        }
-        response = Twitter().search(term)
-        expected = {
-            "images": [
-                {
-                    "key": "3_1619485849615323140",
-                    "url": "https://pbs.twimg.com/media/FnmRzMEX0AQjDvl.jpg"
-                },
-                {
-                    "key": "3_1619485721986834433",
-                    "url": "https://pbs.twimg.com/media/FnmRrwnXoAEzkUO.jpg"
-                }
-            ],
-            "query": "test",
-            "status_code": 200,
-            "status_text": "OK"
-        }
-        self.assertEqual(response, expected)
+    def test_image_classifier(self):
+        file_path = 'images/doll.jpg'
+        classifications = Twitter().classify_image(file_path)
+        self.assertIsNotNone(classifications[0]['prediction'])
