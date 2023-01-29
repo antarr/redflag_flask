@@ -1,6 +1,8 @@
 import os
 import requests
 from dotenv import load_dotenv
+
+from api.models.image_classifier import ImageClassifier
 load_dotenv()
 
 
@@ -10,6 +12,7 @@ class Twitter():
         self.BEARER_TOKEN = os.environ.get('BEARER_TOKEN')
         self.QUERY_SUFFIX = ' -filter:retweets filter:images'
         self.API_URL = 'https://api.twitter.com/2/tweets/search/recent'
+        self.IMAGE_CLASSIFIER = ImageClassifier()
 
     def bearer_oauth(self, r):
         """
@@ -25,7 +28,7 @@ class Twitter():
         status = "OK"
         expansions = 'attachments.media_keys'
         media_fields = 'url,preview_image_url,variants,alt_text'
-        max_results = 100
+        max_results = 25
         json_response = requests.get(self.API_URL,
                                      auth=self.bearer_oauth,
                                      params={'query': query + ' has:images',
@@ -35,9 +38,15 @@ class Twitter():
                                              'max_results': max_results})
 
         if json_response.status_code == 200:
+            if 'includes' not in json_response.json():
+                return {'images': images, 'status_code': json_response.status_code, 'query': query, 'status_text': status}
             for media in json_response.json()['includes']:
-                for image in json_response.json()['includes'][media]:
-                    images.append({'url': image['url'], 'key': image['media_key']})
+                for count, image in enumerate(json_response.json()['includes'][media]):
+                    if count >= 5:
+                        break
+                    local_path = self.save_image_to_tmp(image['url'])
+                    image_classes = self.classify_image(local_path)
+                    images.append({'url': image['url'], 'key': image['media_key'], 'classifications': image_classes})
         elif json_response.status_code == 429:  # rate limit exceeded
             status = "Rate limit exceeded"  # set status to rate limit exceeded
 
@@ -48,3 +57,12 @@ class Twitter():
             status = "Internal Server Error"   # set status to internal server error
 
         return {'images': images, 'status_code': json_response.status_code, 'query': query, 'status_text': status}
+
+    def save_image_to_tmp(self, image_url):
+        image_path = f'/tmp/{image_url.split("/")[-1]}'
+        with open(image_path, 'wb') as f:
+            f.write(requests.get(image_url).content)
+        return image_path
+
+    def classify_image(self, image_path):
+        return self.IMAGE_CLASSIFIER.classify(image_path)

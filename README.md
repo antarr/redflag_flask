@@ -5,33 +5,32 @@ This is a Flask app that allows you to search for images on a social network and
 2. Upload images directly and get ML analysis for that image
 
 ## Prerequisites
-- Python 3.11
+- Python 3.10
 - Pip 
 - Twitter API keys
 
 ## Installation
-1. Install Python 3.11 and pip:
+1. Install Python 3.10 and pip:
 ```
 2. Install Flask and other dependencies:
 ```
-pip install Flask
-pip install <any other ML library>
-pip install <any other social network API>
+pip install -r openai-requirements.txt
+pip install -r requirements.txt
 ```
-3. Clone the repository:
+1. Clone the repository:
 ```
-git clone https://github.com/<your_username>/image-crawler-ml-analysis.git
+git clone https://github.com/antarr/reflag_flask.git
 ```
-4. Navigate to the cloned directory and run the app:
+1. Navigate to the cloned directory and run the app:
 ```
-cd image-crawler-ml-analysis
-flask --app api/app.py run
+cd ireflag_flask
+flask run
 ```
 
 ## Usage
 1. To search via crawler by keyword on a social network and return ML analysis, use the following endpoint:
 ```
-POST http://localhost:5000/search
+POST http://localhost:5000/search/<searchterm>
 ```
 The request body should contain the keyword to search for. The response will be a JSON containing up to 5 images and their ML analysis. 
 
@@ -47,10 +46,10 @@ To run the tests, use the following command:
 make check
 ``
 
-## Training the model
+## Testing the ML Model
 To train the model, use the following command:
 ```
-make train
+make classify
 ```
 
 
