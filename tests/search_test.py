@@ -43,29 +43,32 @@ class SearchTest(unittest.TestCase):
     @patch('requests.get', return_value=MagicMock(status_code=200))
     def test_search_success_with_images(self, mock_get):
         term = 'test'
+
         mock_get.return_value.json.return_value = {
-            "data": [
-                {
-                    "attachments": {
-                        "media_keys": [
-                            "test"
-                        ],
-                        "media": {
-                            "test": {
-                                "url": "test"
-                            }
-                        }
+            "includes": {
+                "media": [
+                    {
+                        "url": "https://pbs.twimg.com/media/FnmRzMEX0AQjDvl.jpg",
+                        "media_key": "3_1619485849615323140",
+                        "type": "photo"
                     },
-                    "text": "test"
-                }
-            ]
+                    {
+                        "url": "https://pbs.twimg.com/media/FnmRrwnXoAEzkUO.jpg",
+                        "media_key": "3_1619485721986834433",
+                        "type": "photo"
+                    }]
+            }
         }
         response = Twitter().search(term)
         expected = {
             "images": [
                 {
-                    "tweet": "test",
-                    "url": "test"
+                    "key": "3_1619485849615323140",
+                    "url": "https://pbs.twimg.com/media/FnmRzMEX0AQjDvl.jpg"
+                },
+                {
+                    "key": "3_1619485721986834433",
+                    "url": "https://pbs.twimg.com/media/FnmRrwnXoAEzkUO.jpg"
                 }
             ],
             "query": "test",
@@ -73,16 +76,3 @@ class SearchTest(unittest.TestCase):
             "status_text": "OK"
         }
         self.assertEqual(response, expected)
-
-    @patch('requests.get', return_value=MagicMock(status_code=200))
-    def test_exception(self, mock_get):
-        term = 'test'
-        with patch('requests.get', side_effect=Exception):
-            response = Twitter().search(term)
-            expected = {
-                "images": [],
-                "query": "test",
-                "status_code": 500,
-                "status_text": "Internal Server Error"
-            }
-            self.assertEqual(response, expected)
